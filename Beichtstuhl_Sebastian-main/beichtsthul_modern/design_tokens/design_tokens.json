@@ -1,0 +1,112 @@
+{
+  "colors": {
+    "base": {
+      "bg": {
+        "base": "#0d0f1a",
+        "panel": "#141826"
+      },
+      "text": {
+        "primary": "#e0e0ff",
+        "secondary": "#a0a0c0"
+      }
+    },
+    "accent": {
+      "primary": "#00eaff",
+      "secondary": "#ff0078",
+      "warn": "#ffb300",
+      "error": "#ff3860",
+      "success": "#00ff7f"
+    },
+    "semantic": {
+      "disabled": "#8a91b8",
+      "monk": {
+        "robe": "#8B4513",
+        "robe_accent": "#5D2906",
+        "hood": "#191970",
+        "skin": "#D2B48C",
+        "accessories": "#FFD700"
+      }
+    }
+  },
+  "radius": {
+    "card": 8,
+    "button": 4,
+    "small": 4,
+    "medium": 8,
+    "large": 12
+  },
+  "spacing": {
+    "base": 8,
+    "component": 16,
+    "element": 12,
+    "section": 24,
+    "xs": 4,
+    "sm": 8,
+    "md": 16,
+    "lg": 24,
+    "xl": 32
+  },
+  "duration": {
+    "fast": 100,
+    "normal": 200,
+    "slow": 300,
+    "transition": 250,
+    "window_fade": 300,
+    "window_exit": 200,
+    "button_hover": 150,
+    "button_press": 100,
+    "text_focus": 200,
+    "monk_emotion": 300,
+    "karma_change": 500
+  },
+  "fonts": {
+    "headline": {
+      "family": "Orbitron",
+      "sizes": {
+        "h1": 28,
+        "h2": 22,
+        "h3": 18,
+        "h4": 16
+      },
+      "weight": {
+        "normal": 400,
+        "bold": 700
+      }
+    },
+    "body": {
+      "family": "Inter",
+      "sizes": {
+        "body": 14,
+        "caption": 12,
+        "small": 12
+      },
+      "weight": {
+        "normal": 400,
+        "bold": 600
+      }
+    },
+    "mono": {
+      "family": "JetBrains Mono",
+      "sizes": {
+        "default": 12
+      },
+      "weight": {
+        "normal": 400
+      }
+    }
+  },
+  "effects": {
+    "glow": {
+      "blur": 6,
+      "spread": 0
+    },
+    "glass": {
+      "opacity": 0.07,
+      "blur": 6
+    },
+    "scanlines": {
+      "opacity": 0.1,
+      "fps": 30
+    }
+  }
+}
