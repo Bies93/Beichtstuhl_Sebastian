@@ -1,13 +1,23 @@
 {
-  "karma_schulden": 7,
+  "karma_schulden": 21,
   "beicht_historie": [
     {
       "suende": "teeest",
       "kategorie": "standard",
       "karma": 7
+    },
+    {
+      "suende": "Spaggn",
+      "kategorie": "standard",
+      "karma": 7
+    },
+    {
+      "suende": "Ich hab den Papst geillt",
+      "kategorie": "standard",
+      "karma": 7
     }
   ],
   "suenden_kategorien": {
-    "standard": 1
+    "standard": 3
   }
 }

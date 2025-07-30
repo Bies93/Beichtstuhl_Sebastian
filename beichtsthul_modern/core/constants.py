@@ -65,12 +65,17 @@ FONT_MONOSPACE = "Cascadia Code"
 FONT_FALLBACK = "Arial"
 
 # Font Sizes
-FONT_SIZE_TITLE = 28
-FONT_SIZE_HEADER = 22
-FONT_SIZE_BUTTON = 16
+FONT_SIZE_H1 = 28      # Title
+FONT_SIZE_H2 = 22      # Header
+FONT_SIZE_H3 = 18      # Subheader
+FONT_SIZE_H4 = 16      # Section header
+FONT_SIZE_H5 = 15      # Body
+FONT_SIZE_H6 = 14      # Small header
+FONT_SIZE_SUBTITLE = 16
 FONT_SIZE_BODY = 15
 FONT_SIZE_CAPTION = 13
 FONT_SIZE_SMALL = 12
+FONT_SIZE_BUTTON = 16  # Button text
 
 # Spacing Constants (8px grid system)
 SPACING_BASE = 8

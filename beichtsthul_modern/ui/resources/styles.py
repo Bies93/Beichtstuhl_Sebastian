@@ -18,7 +18,7 @@ def get_main_window_style():
         
         QMainWindow::title {{
             color: {COLOR_PRIMARY_TEXT};
-            font-size: {FONT_SIZE_TITLE}px;
+            font-size: {FONT_SIZE_H1}px;
             font-weight: bold;
         }}
     """
@@ -40,11 +40,17 @@ def get_button_style():
         
         QPushButton:hover {{
             background-color: {COLOR_SECONDARY_ACCENT};
+            opacity: 0.85;
         }}
         
         QPushButton:pressed {{
             background-color: {COLOR_EMOTIONAL_ACCENT};
-            padding: {SPACING_BASE-1}px {SPACING_COMPONENT-1}px;
+            transform: scale(0.97);
+        }}
+        
+        QPushButton:focus {{
+            outline: 2px solid {COLOR_PRIMARY_ACCENT};
+            outline-offset: 2px;
         }}
         
         QPushButton:disabled {{
@@ -71,11 +77,17 @@ def get_primary_button_style():
         QPushButton:hover {{
             background-color: {COLOR_SECONDARY_ACCENT};
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            opacity: 0.85;
         }}
         
         QPushButton:pressed {{
             background-color: {COLOR_EMOTIONAL_ACCENT};
-            padding: {SPACING_BASE-1}px {SPACING_COMPONENT-1}px;
+            transform: scale(0.97);
+        }}
+        
+        QPushButton:focus {{
+            outline: 2px solid {COLOR_PRIMARY_ACCENT};
+            outline-offset: 2px;
         }}
         
         QPushButton:disabled {{
@@ -100,11 +112,17 @@ def get_secondary_button_style():
         QPushButton:hover {{
             background-color: {COLOR_SURFACE_BG};
             border: 1px solid {COLOR_PRIMARY_ACCENT};
+            opacity: 0.85;
         }}
         
         QPushButton:pressed {{
             background-color: {COLOR_SECONDARY_ACCENT};
-            padding: {SPACING_BASE-1}px {SPACING_COMPONENT-1}px;
+            transform: scale(0.97);
+        }}
+        
+        QPushButton:focus {{
+            outline: 2px solid {COLOR_PRIMARY_ACCENT};
+            outline-offset: 2px;
         }}
         
         QPushButton:disabled {{
@@ -149,13 +167,13 @@ def get_label_style():
         
         QLabel#header {{
             color: {COLOR_PRIMARY_ACCENT};
-            font-size: {FONT_SIZE_HEADER}px;
+            font-size: {FONT_SIZE_H2}px;
             font-weight: bold;
         }}
         
         QLabel#title {{
             color: {COLOR_EMOTIONAL_ACCENT};
-            font-size: {FONT_SIZE_TITLE}px;
+            font-size: {FONT_SIZE_H1}px;
             font-weight: bold;
         }}
         
@@ -200,7 +218,7 @@ def get_karma_display_style():
         
         QLabel#karmaValue {{
             color: {COLOR_ERROR};
-            font-size: {FONT_SIZE_HEADER}px;
+            font-size: {FONT_SIZE_H2}px;
             font-weight: bold;
         }}
     """

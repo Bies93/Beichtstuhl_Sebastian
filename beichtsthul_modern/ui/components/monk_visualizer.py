@@ -8,7 +8,7 @@ A custom widget for rendering the animated monk character with different emotion
 
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtCore import Qt, QTimer, QRect, QPoint
-from PyQt6.QtGui import QPainter, QColor, QPen, QBrush
+from PyQt6.QtGui import QPainter, QColor, QPen, QBrush, QLinearGradient, QRadialGradient, QPainterPath
 
 from core.constants import (
     COLOR_MONK_ROBE, COLOR_MONK_ROBE_ACCENT, COLOR_MONK_HOOD, 
@@ -111,7 +111,7 @@ class MonkVisualizer(QWidget):
         painter.drawRect(rect.adjusted(1, 1, -1, -1))
 
     def draw_monk(self, painter):
-        """Draw the monk character"""
+        """Draw the monk character with modern vector style"""
         # Calculate center position
         center_x = self.width() // 2
         center_y = self.height() // 2
@@ -120,7 +120,7 @@ class MonkVisualizer(QWidget):
         import math
         breathing_scale = 1.0 + 0.02 * math.sin(self._breathing_offset)
         
-        # Draw monk body parts
+        # Draw monk body parts with modern effects
         self.draw_robe(painter, center_x, center_y, breathing_scale)
         self.draw_head(painter, center_x, center_y)
         self.draw_face(painter, center_x, center_y)
@@ -131,49 +131,58 @@ class MonkVisualizer(QWidget):
         self.draw_emotion(painter, center_x, center_y)
 
     def draw_robe(self, painter, center_x, center_y, scale=1.0):
-        """Draw the monk's robe"""
-        # Robe body
-        robe_color = QColor(COLOR_MONK_ROBE)
-        robe_accent_color = QColor(COLOR_MONK_ROBE_ACCENT)
+        """Draw the monk's robe with modern gradients"""
+        # Create gradient for robe
+        robe_gradient = QLinearGradient(center_x, center_y - 50*scale, center_x, center_y + 50*scale)
+        robe_gradient.setColorAt(0, QColor(COLOR_MONK_ROBE).lighter(120))
+        robe_gradient.setColorAt(1, QColor(COLOR_MONK_ROBE).darker(120))
         
         # Main robe body with breathing effect
         body_rect = QRect(
-            int(center_x - 20 * scale), 
-            int(center_y - 30 * scale), 
-            int(40 * scale), 
+            int(center_x - 20 * scale),
+            int(center_y - 30 * scale),
+            int(40 * scale),
             int(80 * scale)
         )
-        painter.setBrush(QBrush(robe_color))
-        painter.setPen(QPen(robe_accent_color, 1))
+        painter.setBrush(QBrush(robe_gradient))
+        painter.setPen(QPen(QColor(COLOR_MONK_ROBE_ACCENT).darker(150), 1))
         painter.drawEllipse(body_rect)
         
-        # Robe folds
-        painter.setPen(QPen(robe_accent_color, 2))
-        painter.drawLine(
-            int(center_x - 15 * scale), 
-            int(center_y - 20 * scale), 
-            int(center_x + 15 * scale), 
-            int(center_y - 20 * scale)
-        )
-        painter.drawLine(
-            int(center_x - 10 * scale), 
-            int(center_y), 
-            int(center_x + 10 * scale), 
-            int(center_y)
-        )
+        # Robe folds with shadow effect
+        fold_color = QColor(COLOR_MONK_ROBE_ACCENT).darker(200)
+        fold_color.setAlpha(150)
+        painter.setPen(QPen(fold_color, 2))
+        
+        # Draw 3D folds
+        for fold_y in [center_y - 20*scale, center_y, center_y + 20*scale]:
+            painter.drawLine(
+                int(center_x - 15 * scale),
+                int(fold_y),
+                int(center_x + 15 * scale),
+                int(fold_y)
+            )
 
     def draw_head(self, painter, center_x, center_y):
-        """Draw the monk's head"""
-        skin_color = QColor(COLOR_MONK_SKIN)
+        """Draw the monk's head with modern shading"""
+        # Create skin gradient
+        skin_gradient = QRadialGradient(center_x, center_y - 60, 30)
+        skin_gradient.setColorAt(0, QColor(COLOR_MONK_SKIN).lighter(120))
+        skin_gradient.setColorAt(1, QColor(COLOR_MONK_SKIN).darker(120))
         
         # Head
         head_rect = QRect(center_x - 25, center_y - 80, 50, 50)
-        painter.setBrush(QBrush(skin_color))
-        painter.setPen(QPen(skin_color.darker(150), 1))
+        painter.setBrush(QBrush(skin_gradient))
+        painter.setPen(QPen(QColor(COLOR_MONK_SKIN).darker(200), 1))
         painter.drawEllipse(head_rect)
+        
+        # Add subtle highlight
+        highlight = QColor(255, 255, 255, 50)
+        painter.setBrush(QBrush(highlight))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(center_x - 10, center_y - 85, 20, 10)
 
     def draw_face(self, painter, center_x, center_y):
-        """Draw the monk's face"""
+        """Draw the monk's face with detailed features"""
         # Eyes (with blink animation)
         eye_height = 5
         if self._blink_state == 1:  # Closing
@@ -183,21 +192,40 @@ class MonkVisualizer(QWidget):
         elif self._blink_state == 3:  # Opening
             eye_height = 3
         
-        painter.setBrush(QBrush(QColor("#000000")))
-        painter.setPen(QPen(QColor("#000000"), 1))
+        # Draw eyes with gradient
+        eye_gradient = QLinearGradient(0, 0, 0, eye_height)
+        eye_gradient.setColorAt(0, QColor("#222222"))
+        eye_gradient.setColorAt(1, QColor("#000000"))
         
-        # Left eye
+        painter.setBrush(QBrush(eye_gradient))
+        painter.setPen(QPen(QColor("#111111"), 1))
+        
+        # Left eye with highlight
         painter.drawEllipse(QRect(center_x - 15, center_y - 65, 8, eye_height))
+        painter.setBrush(QBrush(QColor("#FFFFFF")))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(center_x - 13, center_y - 64, 2, 1)
         
-        # Right eye
+        # Right eye with highlight
+        painter.setBrush(QBrush(eye_gradient))
+        painter.setPen(QPen(QColor("#111111"), 1))
         painter.drawEllipse(QRect(center_x + 7, center_y - 65, 8, eye_height))
+        painter.setBrush(QBrush(QColor("#FFFFFF")))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(center_x + 9, center_y - 64, 2, 1)
         
-        # Nose
-        painter.setPen(QPen(QColor("#000000"), 2))
+        # Nose with shading
+        painter.setPen(QPen(QColor("#333333"), 2))
         painter.drawLine(center_x - 2, center_y - 55, center_x, center_y - 50)
         
         # Mouth (changes with emotion)
         self.draw_mouth(painter, center_x, center_y)
+        
+        # Eyebrows
+        brow_color = QColor("#333333")
+        painter.setPen(QPen(brow_color, 2))
+        painter.drawLine(center_x - 17, center_y - 70, center_x - 10, center_y - 68)
+        painter.drawLine(center_x + 10, center_y - 68, center_x + 17, center_y - 70)
 
     def draw_mouth(self, painter, center_x, center_y):
         """Draw the monk's mouth based on emotion"""
@@ -224,27 +252,47 @@ class MonkVisualizer(QWidget):
             painter.drawLine(center_x - 10, center_y - 40, center_x + 10, center_y - 40)
 
     def draw_hood(self, painter, center_x, center_y):
-        """Draw the monk's hood"""
-        hood_color = QColor(COLOR_MONK_HOOD)
+        """Draw the monk's hood with modern shading"""
+        # Create hood gradient
+        hood_gradient = QLinearGradient(center_x, center_y - 90, center_x, center_y - 60)
+        hood_gradient.setColorAt(0, QColor(COLOR_MONK_HOOD).lighter(120))
+        hood_gradient.setColorAt(1, QColor(COLOR_MONK_HOOD).darker(150))
         
         # Hood (semicircle)
-        painter.setBrush(QBrush(hood_color))
-        painter.setPen(QPen(hood_color.darker(150), 1))
+        painter.setBrush(QBrush(hood_gradient))
+        painter.setPen(QPen(QColor(COLOR_MONK_HOOD).darker(200), 1))
         hood_rect = QRect(center_x - 30, center_y - 90, 60, 30)
         painter.drawChord(hood_rect, 0, 180 * 16)
+        
+        # Hood shadow on head
+        shadow = QColor(0, 0, 0, 30)
+        painter.setBrush(QBrush(shadow))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(center_x - 20, center_y - 75, 40, 10)
 
     def draw_arms(self, painter, center_x, center_y):
-        """Draw the monk's arms"""
-        robe_color = QColor(COLOR_MONK_ROBE)
-        robe_accent_color = QColor(COLOR_MONK_ROBE_ACCENT)
+        """Draw the monk's arms with 3D effect"""
+        # Create arm gradient
+        arm_gradient = QLinearGradient(0, 0, 0, 20)
+        arm_gradient.setColorAt(0, QColor(COLOR_MONK_ROBE).lighter(120))
+        arm_gradient.setColorAt(1, QColor(COLOR_MONK_ROBE).darker(120))
         
-        painter.setPen(QPen(robe_accent_color, 6))
+        painter.setPen(QPen(QColor(COLOR_MONK_ROBE_ACCENT).darker(150), 6))
+        painter.setBrush(QBrush(arm_gradient))
         
-        # Left arm
-        painter.drawLine(center_x - 20, center_y - 20, center_x - 40, center_y - 10)
+        # Left arm with rounded ends
+        path = QPainterPath()
+        path.moveTo(center_x - 20, center_y - 20)
+        path.lineTo(center_x - 40, center_y - 10)
+        painter.drawPath(path)
+        painter.drawEllipse(center_x - 42, center_y - 12, 5, 5)
         
-        # Right arm
-        painter.drawLine(center_x + 20, center_y - 20, center_x + 40, center_y - 10)
+        # Right arm with rounded ends
+        path = QPainterPath()
+        path.moveTo(center_x + 20, center_y - 20)
+        path.lineTo(center_x + 40, center_y - 10)
+        painter.drawPath(path)
+        painter.drawEllipse(center_x + 38, center_y - 12, 5, 5)
 
     def draw_emotion(self, painter, center_x, center_y):
         """Draw emotion-specific features"""
