@@ -1,0 +1,36 @@
+{
+  "karma_schulden": 45,
+  "beicht_historie": [
+    {
+      "suende": "feuer",
+      "kategorie": "standard",
+      "karma": 7
+    },
+    "feuer",
+    {
+      "suende": "feuer",
+      "kategorie": "standard",
+      "karma": 7
+    },
+    "feuer",
+    {
+      "suende": "feuer",
+      "kategorie": "standard",
+      "karma": 7
+    },
+    "feuer",
+    {
+      "suende": "feuer",
+      "kategorie": "standard",
+      "karma": 7
+    },
+    "feuer",
+    {
+      "suende": "lüg",
+      "kategorie": "lügen",
+      "karma": 15
+    },
+    "lüg"
+  ],
+  "suenden_kategorien": {}
+}

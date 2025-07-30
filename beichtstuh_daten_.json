@@ -1,0 +1,13 @@
+{
+  "karma_schulden": 7,
+  "beicht_historie": [
+    {
+      "suende": "teeest",
+      "kategorie": "standard",
+      "karma": 7
+    }
+  ],
+  "suenden_kategorien": {
+    "standard": 1
+  }
+}
