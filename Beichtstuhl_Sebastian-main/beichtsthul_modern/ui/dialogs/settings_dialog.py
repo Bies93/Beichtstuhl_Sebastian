@@ -58,18 +58,26 @@ class SettingsDialog(QDialog):
         # Create buttons
         self.create_buttons(layout)
         
+        # Set accessible names and descriptions
+        self.set_accessible_info()
     def create_sound_settings_group(self, parent_layout):
         """Create sound settings group"""
         sound_group = QGroupBox("Audio-Einstellungen")
+        # Make the group box title use section typography
+        sound_group.setProperty("type", "section")
         sound_layout = QVBoxLayout(sound_group)
         
         # Volume slider
         volume_layout = QHBoxLayout()
         volume_label = QLabel("Lautstärke:")
+        # Make this a caption label
+        volume_label.setProperty("type", "caption")
         self.volume_slider = QSlider(Qt.Orientation.Horizontal)
         self.volume_slider.setRange(0, 100)
         self.volume_slider.setValue(100)
         self.volume_value_label = QLabel("100%")
+        # Make this a caption label
+        self.volume_value_label.setProperty("type", "caption")
         
         volume_layout.addWidget(volume_label)
         volume_layout.addWidget(self.volume_slider)
@@ -85,10 +93,15 @@ class SettingsDialog(QDialog):
     def create_theme_settings_group(self, parent_layout):
         """Create theme settings group"""
         theme_group = QGroupBox("Design-Einstellungen")
+        # Make the group box title use section typography
+        theme_group.setProperty("type", "section")
         theme_layout = QVBoxLayout(theme_group)
         
         # Theme selector
-        theme_layout.addWidget(QLabel("Design:"))
+        theme_label = QLabel("Design:")
+        # Make this a caption label
+        theme_label.setProperty("type", "caption")
+        theme_layout.addWidget(theme_label)
         self.theme_combo = QComboBox()
         self.theme_combo.addItems(["Cyberpunk", "Cyberlight"])
         theme_layout.addWidget(self.theme_combo)
@@ -141,6 +154,23 @@ class SettingsDialog(QDialog):
         self.mute_shortcut = QShortcut(QKeySequence("Ctrl+M"), self)
         self.mute_shortcut.activated.connect(self.toggle_mute)
         
+    def set_accessible_info(self):
+        """Sets accessible names and descriptions for widgets."""
+        # Sound settings
+        self.volume_slider.setAccessibleName("Lautstärke")
+        self.volume_slider.setAccessibleDescription("Stellen Sie die Lautstärke der Anwendung ein.")
+        self.mute_checkbox.setAccessibleName("Stummschalten")
+        self.mute_checkbox.setAccessibleDescription("Schaltet die Anwendung stumm.")
+        
+        # Theme settings
+        self.theme_combo.setAccessibleName("Design")
+        self.theme_combo.setAccessibleDescription("Wählen Sie das Design der Anwendung.")
+        
+        # Buttons
+        self.ok_button.setAccessibleName("OK")
+        self.ok_button.setAccessibleDescription("Speichert die Einstellungen und schließt das Fenster.")
+        self.cancel_button.setAccessibleName("Abbrechen")
+        self.cancel_button.setAccessibleDescription("Verwirft die Änderungen und schließt das Fenster.")
     def load_settings(self):
         """Load current settings"""
         # Load volume

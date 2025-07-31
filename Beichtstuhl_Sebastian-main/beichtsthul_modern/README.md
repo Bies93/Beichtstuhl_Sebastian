@@ -1,4 +1,4 @@
-# Der Sarkastische Beichtstuhl (Modernized Version)
+# Der Sarkastische Beichtstuhl (Modernized Neon-Cyberpunk Version)
 
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue)
 ![PyQt6](https://img.shields.io/badge/PyQt6-6.0%2B-green)
@@ -8,16 +8,17 @@ A modern, sarcastic confessional booth application with enhanced UI/UX design an
 
 ## Overview
 
-The "Sarkastischer Beichtstuhl" (Sarcastic Confessional Booth) is a humorous desktop application that allows users to "confess" their sins and receive sardonic responses from a virtual monk. This modernized version features a sleek dark theme interface with vibrant accent colors, smooth animations, and immersive sound effects.
+The "Sarkastischer Beichtstuhl" (Sarcastic Confessional Booth) is a humorous desktop application that allows users to "confess" their sins and receive sardonic responses from a virtual monk. This modernized version features a sleek neon-cyberpunk interface with vibrant accent colors, smooth animations, and immersive sound effects.
 
 ## Features
 
 ### Modern UI/UX Design
-- **Dark Theme Interface**: Elegant dark theme with vibrant accent colors
-- **Responsive Layout**: Adapts to different screen sizes and resolutions
+- **Neon-Cyberpunk Interface**: Modern dark theme with vibrant neon cyan and magenta accents
+- **Glassmorphism Effects**: Semi-transparent panels with blur effects
+- **Responsive Layout**: Adapts to different screen sizes with 12-column grid system
 - **Animated Components**: Smooth animations and transitions throughout the application
-- **Emotional Monk Character**: Expressive monk visualization with multiple emotions
-- **Modern Widgets**: Custom-styled buttons, input fields, and display components
+- **Emotional Monk Character**: Expressive monk visualization with Lottie animations
+- **Modern Widgets**: Custom-styled buttons, input fields, and display components with glow effects
 
 ### Rich Multimedia Experience
 - **Sound Effects**: Contextual sound effects for interactions and responses
@@ -113,11 +114,11 @@ python main.py
 ## Design Principles
 
 ### UI/UX Design
-- **Material Design Inspired**: Modern interface with depth and shadows
-- **Responsive Layout**: Adapts to different screen sizes
-- **Consistent Typography**: Clear, readable text with proper hierarchy
-- **Visual Feedback**: Immediate feedback for all user interactions
-- **Accessibility**: Proper contrast ratios and keyboard navigation
+- **Neon-Cyberpunk Aesthetic**: Modern interface with vibrant neon colors and glass effects
+- **Responsive Layout**: Adapts to different screen sizes with breakpoints at 600px and 1000px
+- **Consistent Typography**: Clear, readable text with Orbitron/Inter font hierarchy
+- **Visual Feedback**: Immediate feedback with glow effects and animations
+- **Accessibility**: WCAG AA compliant contrast ratios and keyboard navigation
 
 ### Animation System
 - **Micro-interactions**: Subtle animations for enhanced user experience

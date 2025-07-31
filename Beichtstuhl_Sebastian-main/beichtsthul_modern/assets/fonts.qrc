@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/fonts">
+    <file alias="Orbitron-Regular.ttf">fonts/Orbitron-Regular.ttf</file>
+    <file alias="Inter-Regular.ttf">fonts/Inter-Regular.ttf</file>
+    <file alias="JetBrainsMono-Regular.ttf">fonts/JetBrainsMono-Regular.ttf</file>
+</qresource>
+</RCC>

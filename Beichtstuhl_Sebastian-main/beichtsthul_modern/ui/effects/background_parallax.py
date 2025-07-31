@@ -2,189 +2,81 @@
 # -*- coding: utf-8 -*-
 
 """
-Background Parallax Effect for Beichtsthul Modern
-Implements a parallax background effect with VHS scanlines and particles.
+Parallax Background Effect for Beichtsthul Modern
+Implements a parallax background using QGraphicsView and QGraphicsScene.
 """
 
-import sys
-import random
-from PyQt6.QtWidgets import QWidget, QApplication, QVBoxLayout, QLabel
-from PyQt6.QtCore import Qt, QTimer, QRectF, QPointF, pyqtSignal
-from PyQt6.QtGui import QPainter, QPixmap, QColor, QPen, QBrush
+from PyQt6.QtWidgets import QGraphicsView, QApplication, QWidget, QVBoxLayout
+from PyQt6.QtCore import Qt, QPointF, QTimer, QElapsedTimer
+from PyQt6.QtGui import QPainter, QColor
+from PyQt6.QtWidgets import QGraphicsView
 
+from .parallax_scene import ParallaxScene
 
-class ParallaxBackground(QWidget):
-    """A widget that implements a parallax background effect"""
-    
+class ParallaxBackground(QGraphicsView):
+    """
+    A QGraphicsView that displays a ParallaxScene and updates it
+    based on mouse movement to create a parallax effect.
+    """
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-        self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground)
-        self.setAttribute(Qt.WidgetAttribute.WA_OpaquePaintEvent, False)
-        
-        # Parallax layers
-        self.scanlines_layer = None
-        self.particles_layer = []
-        
-        # Mouse position for parallax effect
-        self.mouse_pos = QPointF(0, 0)
-        
-        # Animation timer
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_particles)
-        self.timer.start(16)  # ~60fps
-        
-        # Initialize particles
-        self.init_particles()
-        
-    def init_particles(self):
-        """Initialize background particles"""
-        self.particles_layer = []
-        for _ in range(50):
-            particle = {
-                'pos': QPointF(random.randint(0, self.width()), random.randint(0, self.height())),
-                'velocity': QPointF(random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5)),
-                'size': random.randint(1, 3),
-                'opacity': random.uniform(0.1, 0.3)
-            }
-            self.particles_layer.append(particle)
-    
-    def set_scanlines_image(self, pixmap):
-        """
-        Set the scanlines image for the background
-        
-        Args:
-            pixmap: QPixmap with scanlines image
-        """
-        self.scanlines_layer = pixmap
-        self.update()
-    
+
+        self.scene = ParallaxScene(self)
+        self.setScene(self.scene)
+
+        # Configure the view
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+        self.setCacheMode(QGraphicsView.CacheModeFlag.CacheBackground)
+        # Use smarter viewport updates to reduce repaint cost
+        self.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.SmartViewportUpdate)
+        self.setStyleSheet("background: transparent; border: 0px;")
+
+        # Enable mouse tracking to get mouse events without clicking
+        self.setMouseTracking(True)
+
+        # Throttle parallax updates to avoid flooding the UI thread
+        self._parallax_timer = QTimer(self)
+        self._parallax_timer.setSingleShot(True)
+        self._parallax_timer.timeout.connect(self._flush_parallax)
+        self._parallax_pending = False
+        self._last_mouse_pos = QPointF(self.viewport().width() / 2, self.viewport().height() / 2)
+
     def mouseMoveEvent(self, event):
-        """Handle mouse movement for parallax effect"""
-        self.mouse_pos = event.position()
-        self.update()
-    
+        """Handle mouse movement to update the parallax effect (throttled)."""
+        self._last_mouse_pos = event.pos()
+        # Schedule an update at ~60 FPS; coalesce multiple events
+        if not self._parallax_pending:
+            self._parallax_pending = True
+            # 16 ms ~ 60 Hz
+            self._parallax_timer.start(16)
+        super().mouseMoveEvent(event)
+
+    def _flush_parallax(self):
+        """Apply the latest parallax update."""
+        self._parallax_pending = False
+        view_center = QPointF(self.viewport().width() / 2, self.viewport().height() / 2)
+        self.scene.update_parallax(self._last_mouse_pos, view_center)
+
     def resizeEvent(self, event):
-        """Handle widget resize"""
+        """Handle resize events to keep the scene centered."""
+        self.fitInView(self.scene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatioByExpanding)
         super().resizeEvent(event)
-        # Reinitialize particles on resize
-        self.init_particles()
-        self.update()
-    
-    def update_particles(self):
-        """Update particle positions"""
-        for particle in self.particles_layer:
-            # Move particle
-            particle['pos'] += particle['velocity']
-            
-            # Wrap around screen edges
-            if particle['pos'].x() < 0:
-                particle['pos'].setX(self.width())
-            elif particle['pos'].x() > self.width():
-                particle['pos'].setX(0)
-                
-            if particle['pos'].y() < 0:
-                particle['pos'].setY(self.height())
-            elif particle['pos'].y() > self.height():
-                particle['pos'].setY(0)
-        
-        self.update()
-    
-    def paintEvent(self, event):
-        """Paint the parallax background"""
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        
-        # Calculate parallax offset based on mouse position
-        parallax_factor = 0.05
-        offset_x = (self.mouse_pos.x() - self.width() / 2) * parallax_factor
-        offset_y = (self.mouse_pos.y() - self.height() / 2) * parallax_factor
-        
-        # Draw particles layer with parallax
-        self.draw_particles(painter, offset_x * 0.5, offset_y * 0.5)
-        
-        # Draw scanlines layer with parallax
-        self.draw_scanlines(painter, offset_x, offset_y)
-        
-        painter.end()
-    
-    def draw_particles(self, painter, offset_x, offset_y):
-        """Draw background particles"""
-        painter.save()
-        painter.translate(offset_x, offset_y)
-        
-        for particle in self.particles_layer:
-            # Calculate particle position with offset
-            x = (particle['pos'].x() + offset_x) % self.width()
-            y = (particle['pos'].y() + offset_y) % self.height()
-            
-            # Set particle color with opacity
-            color = QColor(0, 234, 255)  # Neon cyan
-            color.setAlphaF(particle['opacity'])
-            painter.setPen(QPen(color))
-            painter.setBrush(QBrush(color))
-            
-            # Draw particle
-            painter.drawEllipse(x, y, particle['size'], particle['size'])
-        
-        painter.restore()
-    
-    def draw_scanlines(self, painter, offset_x, offset_y):
-        """Draw scanlines layer"""
-        if self.scanlines_layer and not self.scanlines_layer.isNull():
-            painter.save()
-            painter.translate(offset_x, offset_y)
-            
-            # Draw scanlines with opacity
-            painter.setOpacity(0.1)
-            painter.drawPixmap(0, 0, self.scanlines_layer)
-            
-            painter.restore()
-        else:
-            # Draw simple scanlines if no image is available
-            self.draw_simple_scanlines(painter, offset_x, offset_y)
-    
-    def draw_simple_scanlines(self, painter, offset_x, offset_y):
-        """Draw simple scanlines as fallback"""
-        painter.save()
-        painter.translate(offset_x, offset_y)
-        
-        # Set scanline color
-        color = QColor(0, 234, 255)  # Neon cyan
-        color.setAlphaF(0.1)
-        painter.setPen(QPen(color, 1))
-        
-        # Draw horizontal lines
-        for y in range(0, self.height(), 4):
-            painter.drawLine(0, y, self.width(), y)
-        
-        painter.restore()
 
+if __name__ == '__main__':
+    import sys
 
-# Example usage
-if __name__ == "__main__":
     app = QApplication(sys.argv)
     
-    # Create main window
-    window = QWidget()
-    window.setWindowTitle("Parallax Background Test")
-    window.setGeometry(100, 100, 800, 600)
-    window.setStyleSheet("background-color: #0d0f1a;")  # Cyberpunk background
+    main_window = QWidget()
+    main_window.setGeometry(100, 100, 800, 600)
+    main_window.setStyleSheet("background-color: #0E1222;")
+
+    layout = QVBoxLayout(main_window)
+    parallax_view = ParallaxBackground()
+    layout.addWidget(parallax_view)
     
-    # Create layout
-    layout = QVBoxLayout(window)
-    
-    # Create parallax background
-    parallax_bg = ParallaxBackground()
-    
-    # Add a label on top to show that the background works
-    label = QLabel("Move your mouse to see the parallax effect!")
-    label.setStyleSheet("color: #00eaff; font-size: 24px; font-family: Orbitron;")
-    label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    
-    # Add widgets to layout
-    layout.addWidget(parallax_bg)
-    layout.addWidget(label)
-    
-    window.show()
+    main_window.show()
     sys.exit(app.exec())

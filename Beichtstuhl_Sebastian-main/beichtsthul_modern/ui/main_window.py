@@ -11,16 +11,18 @@ import random
 import time
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QStatusBar, QApplication
+    QLabel, QStatusBar, QApplication, QGridLayout, QStackedLayout
 )
 from PyQt6.QtCore import Qt, QRect, pyqtSignal, QSize, QTimer
 from PyQt6.QtGui import QFont, QColor
 
 from ui.components.animated_button import AnimatedButton
+from ui.components.card_widget import CardWidget
 from ui.components.confession_input import ConfessionInput
 from ui.components.response_display import ResponseDisplay
 from ui.components.karma_display import KarmaDisplay
 from ui.components.monk_visualizer import MonkVisualizer
+from ui.effects.background_parallax import ParallaxBackground
 from ui.dialogs.settings_dialog import SettingsDialog
 from ui.resources.styles import get_main_window_style, get_label_style, get_status_bar_style
 from ui.resources.animations import AnimationDefinitions
@@ -69,89 +71,123 @@ class MainWindow(QMainWindow):
         self.show_welcome_message()
 
     def init_ui(self):
-        """Initialize the user interface with responsive grid layout"""
-        # Create central widget
+        """Initialize the user interface with a stacked layout for parallax effect."""
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
+
+        # Outer layout for the central widget
+        self._outer_layout = QVBoxLayout(self.central_widget)
+        self._outer_layout.setContentsMargins(0, 0, 0, 0)
+        self._outer_layout.setSpacing(0)
+
+        # Stacked layout hosts background and content container
+        self.stacked_layout = QStackedLayout()
+        self._outer_layout.addLayout(self.stacked_layout)
+
+        # Parallax background is the bottom layer
+        self.parallax_bg = ParallaxBackground()
+
+        # Content container (separate widget) is the top layer
+        self.content_container = QWidget()
+        # Give content a slight translucent panel background to be visually distinct above parallax
+        self.content_container.setStyleSheet("background: rgba(10, 10, 16, 0.65);")
+
+        # Add pages to the stack
+        self.stacked_layout.addWidget(self.parallax_bg)
+        self.stacked_layout.addWidget(self.content_container)
+
+        # The main layout will be applied to the content container
+        self.main_layout = QGridLayout(self.content_container)
+        for i in range(12):
+            self.main_layout.setColumnStretch(i, 1)
+        # Allocate space for rows: top row content + footer
+        self.main_layout.setRowStretch(0, 1)
+        self.main_layout.setRowStretch(1, 0)
+        self.content_container.setMinimumSize(600, 400)
+
+        # Ensure the content layer is visible on top of the parallax background
+        self.stacked_layout.setCurrentWidget(self.content_container)
+
+
+        # Left Card: Text Input
+        self.input_card = CardWidget()
+        self.input_card.setObjectName("inputCard")
+        self.confession_input = ConfessionInput()
+        self.confession_input.confession_submitted.connect(self.handle_confession)
+        self.response_display = ResponseDisplay()
         
-        # Create main layout with responsive grid
-        self.main_layout = QVBoxLayout(self.central_widget)
-        self.main_layout.setContentsMargins(20, 20, 20, 20)
-        self.main_layout.setSpacing(15)
+        input_layout = QVBoxLayout()
+        input_layout.addWidget(self.confession_input)
+        input_layout.addWidget(self.response_display)
+        self.input_card.setLayout(input_layout)
+
+        # Improve label contrast and hierarchy on startup (safety)
+        # Ensure QSS types apply for existing labels after construction
+        try:
+            if hasattr(self.confession_input, "header_label"):
+                self.confession_input.header_label.setProperty("type", "header")
+            # Karma header bound in component; no-op here
+        except Exception:
+            pass
+        self.input_card.setMinimumHeight(200)
+
+        # Right Card: Monk Visualizer
+        self.visualizer_card = CardWidget()
+        self.visualizer_card.setObjectName("visualizerCard")
+        self.monk_visualizer = MonkVisualizer()
+        self.karma_display = KarmaDisplay()
+        self.karma_display.set_karma(self.karma_schulden)
+
+        visualizer_layout = QVBoxLayout()
+        visualizer_layout.addWidget(self.monk_visualizer)
+        visualizer_layout.addWidget(self.karma_display)
+        self.visualizer_card.setLayout(visualizer_layout)
+        self.visualizer_card.setMinimumHeight(200)
+
+        # Add cards to the grid
+        self.main_layout.addWidget(self.input_card, 0, 0, 1, 6)
+        self.main_layout.addWidget(self.visualizer_card, 0, 6, 1, 6)
+
+        # Sticky Footer: Action Bar
+        self.action_bar = QWidget()
+        self.action_bar.setObjectName("footer")
+        action_layout = QHBoxLayout(self.action_bar)
         
-        # Set minimum size for touch-friendly targets
-        self.setMinimumSize(600, 500)
+        self.confess_button = AnimatedButton("Beichten")
+        self.confess_button.clicked.connect(self.handle_confession_button)
         
-        # Create title
-        self.create_title()
+        self.stats_button = AnimatedButton("Statistiken")
+        self.stats_button.clicked.connect(self.show_statistics)
         
-        # Create monk visualizer
-        self.create_monk_visualizer()
+        self.reset_button = AnimatedButton("Reset")
+        self.reset_button.clicked.connect(self.reset_statistics)
         
-        # Create confession input
-        self.create_confession_input()
-        
-        # Create action buttons
-        self.create_action_buttons()
-        
-        # Create response display
-        self.create_response_display()
-        
-        # Create karma display
-        self.create_karma_display()
-        
+        action_layout.addStretch()
+        action_layout.addWidget(self.confess_button)
+        action_layout.addWidget(self.stats_button)
+        action_layout.addWidget(self.reset_button)
+        action_layout.addStretch()
+
+        self.main_layout.addWidget(self.action_bar, 1, 0, 1, 12)
+        # reinforce row stretches for stable layout
+        self.main_layout.setRowStretch(0, 1)
+        self.main_layout.setRowStretch(1, 0)
+
+        # TEMP DEBUG STYLES: show visible borders for cards and action bar
+        self.content_container.setStyleSheet(self.content_container.styleSheet() + """
+            QWidget#inputCard { border: 2px solid #00EAFE; }
+            QWidget#visualizerCard { border: 2px solid #FF0078; }
+            QWidget#footer { border-top: 2px solid #444; }
+        """)
+
         # Create status bar
         self.create_status_bar()
 
-    def create_title(self):
-        """Create the application title"""
-        self.title_label = QLabel(APP_NAME)
-        self.title_label.setObjectName("title")
-        self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.main_layout.addWidget(self.title_label)
+        # Set accessible names and descriptions
+        self.set_accessible_info()
 
-    def create_monk_visualizer(self):
-        """Create the monk character visualizer"""
-        self.monk_visualizer = MonkVisualizer()
-        self.main_layout.addWidget(self.monk_visualizer)
-
-    def create_confession_input(self):
-        """Create the confession input area"""
-        self.confession_input = ConfessionInput()
-        self.confession_input.confession_submitted.connect(self.handle_confession)
-        self.main_layout.addWidget(self.confession_input)
-
-    def create_action_buttons(self):
-        """Create the action buttons"""
-        self.button_layout = QHBoxLayout()
-        
-        self.confess_button = AnimatedButton("⚡ BEICHTEN ⚡")
-        self.confess_button.setObjectName("primary")
-        self.confess_button.clicked.connect(self.handle_confession_button)
-        self.button_layout.addWidget(self.confess_button)
-        
-        self.stats_button = AnimatedButton("📊 Statistiken")
-        self.stats_button.setObjectName("secondary")
-        self.stats_button.clicked.connect(self.show_statistics)
-        self.button_layout.addWidget(self.stats_button)
-        
-        self.reset_button = AnimatedButton("🔄 Reset")
-        self.reset_button.setObjectName("secondary")
-        self.reset_button.clicked.connect(self.reset_statistics)
-        self.button_layout.addWidget(self.reset_button)
-        
-        self.main_layout.addLayout(self.button_layout)
-
-    def create_response_display(self):
-        """Create the response display area"""
-        self.response_display = ResponseDisplay()
-        self.main_layout.addWidget(self.response_display)
-
-    def create_karma_display(self):
-        """Create the karma display"""
-        self.karma_display = KarmaDisplay()
-        self.karma_display.set_karma(self.karma_schulden)
-        self.main_layout.addWidget(self.karma_display)
+        # Set tab order
+        self.set_tab_order()
 
     def create_status_bar(self):
         """Create the status bar"""
@@ -159,11 +195,38 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.status_bar)
         self.status_bar.showMessage("Bereit für etwas Selbsterkenntnis?")
 
+    def set_accessible_info(self):
+        """Sets accessible names and descriptions for widgets."""
+        self.confession_input.text_input.setAccessibleName("Beichteingabe")
+        self.confession_input.text_input.setAccessibleDescription("Geben Sie hier Ihre Beichte ein.")
+        
+        self.confess_button.setAccessibleName("Beichten")
+        self.confess_button.setAccessibleDescription("Klicken Sie hier, um Ihre Beichte abzusenden.")
+        
+        self.stats_button.setAccessibleName("Statistiken")
+        self.stats_button.setAccessibleDescription("Zeigt Ihre Beichtstatistiken an.")
+        
+        self.reset_button.setAccessibleName("Zurücksetzen")
+        self.reset_button.setAccessibleDescription("Setzt alle Ihre Statistiken und Karmaschulden zurück.")
+
+    def set_tab_order(self):
+        """Sets the tab order for interactive widgets."""
+        # Only set tab order if widgets are visible and in the same window
+        try:
+            if (self.confession_input.text_input.isVisible() and
+                self.confess_button.isVisible() and
+                self.stats_button.isVisible() and
+                self.reset_button.isVisible()):
+                self.setTabOrder(self.confession_input.text_input, self.confess_button)
+                self.setTabOrder(self.confess_button, self.stats_button)
+                self.setTabOrder(self.stats_button, self.reset_button)
+        except Exception as e:
+            print(f"Warning: Could not set tab order: {e}")
+
     def apply_styles(self):
         """Apply stylesheets to the window and components"""
-        self.setStyleSheet(get_main_window_style())
-        self.title_label.setStyleSheet(get_label_style())
-        self.status_bar.setStyleSheet(get_status_bar_style())
+        # The main stylesheet is loaded in main.py
+        pass
 
     def setup_animations(self):
         """Setup window animations"""
@@ -177,7 +240,20 @@ class MainWindow(QMainWindow):
         self.karma_changed.connect(self.karma_display.set_karma)
 
     def show_welcome_message(self):
-        """Show a welcome message when the application starts"""
+        """Show a welcome message when the application starts and ensure content is on top"""
+        # Safety: force the content page visible in case external code altered the stack
+        try:
+            if hasattr(self, "stacked_layout") and hasattr(self, "content_container"):
+                self.stacked_layout.setCurrentWidget(self.content_container)
+                # Print debug info about layout/page and sizes
+                try:
+                    print(f"[UI DEBUG] currentStackIndex={self.stacked_layout.currentIndex()} pages={self.stacked_layout.count()}")
+                    print(f"[UI DEBUG] content_container size={self.content_container.size()}")
+                    print(f"[UI DEBUG] parallax_bg size={self.parallax_bg.size()}")
+                except Exception:
+                    pass
+        except Exception:
+            pass
         welcome_messages = [
             "Willkommen in der Höhle der Wahrheit!",
             "Ein neues Opfer... äh, Besucher!",
@@ -291,65 +367,99 @@ class MainWindow(QMainWindow):
         """Handle window resize events for responsive design"""
         super().resizeEvent(event)
         self.update_layout_for_size(event.size())
+        self.adjust_component_sizes(event.size().width(), event.size().height())
 
     def update_layout_for_size(self, size):
         """Update layout based on window size"""
         width = size.width()
         height = size.height()
         
-        # Adjust spacing based on window size
-        if width < 800 or height < 600:
-            # Small window - reduce spacing
-            self.main_layout.setSpacing(10)
-            self.main_layout.setContentsMargins(10, 10, 10, 10)
-        elif width > 1200 or height > 900:
-            # Large window - increase spacing
-            self.main_layout.setSpacing(20)
-            self.main_layout.setContentsMargins(30, 30, 30, 30)
-        else:
-            # Medium window - default spacing
-            self.main_layout.setSpacing(15)
-            self.main_layout.setContentsMargins(20, 20, 20, 20)
+        # Define breakpoints
+        compact_width = 800
+        compact_height = 600
         
-        # Adjust component sizes
-        self.adjust_component_sizes(width, height)
+        # Adjust layout based on screen size
+        if width < compact_width or height < compact_height:
+            # Compact layout - stack elements vertically
+            self.switch_to_compact_layout()
+        else:
+            # Standard layout - use grid
+            self.switch_to_standard_layout()
+            
+    def switch_to_compact_layout(self):
+        """Switch to a compact vertical layout for smaller screens"""
+        # Remove existing widgets from grid
+        for i in reversed(range(self.main_layout.count())):
+            self.main_layout.takeAt(i)
+            
+        # Create a vertical layout for compact view
+        compact_layout = QVBoxLayout(self.content_container)
+        compact_layout.setContentsMargins(10, 10, 10, 10)
+        compact_layout.setSpacing(15)
+        
+        # Add cards vertically
+        compact_layout.addWidget(self.input_card)
+        compact_layout.addWidget(self.visualizer_card)
+        compact_layout.addWidget(self.action_bar)
+        
+        # Update the content container layout
+        # Note: This is a simplified approach - in a real implementation,
+        # you might want to use a more sophisticated layout management
+        
+    def switch_to_standard_layout(self):
+        """Switch back to the standard grid layout"""
+        # Clear any existing layout
+        for i in reversed(range(self.main_layout.count())):
+            self.main_layout.takeAt(i)
+            
+        # Restore the standard grid layout
+        self.main_layout.addWidget(self.input_card, 0, 0, 1, 7)
+        self.main_layout.addWidget(self.visualizer_card, 0, 7, 1, 5)
+        self.main_layout.addWidget(self.action_bar, 1, 0, 1, 12)
+        
+        # Update row stretches
+        self.main_layout.setRowStretch(0, 1)
+        self.main_layout.setRowStretch(1, 0)
 
     def adjust_component_sizes(self, width, height):
         """Adjust component sizes based on window dimensions"""
-        # Adjust monk visualizer size
-        if hasattr(self, 'monk_visualizer'):
-            # Set minimum height based on window height
-            min_height = max(200, height // 4)
-            self.monk_visualizer.setMinimumHeight(min_height)
-        
-        # Adjust confession input size
-        if hasattr(self, 'confession_input'):
-            # Set maximum height based on window height
-            max_height = max(100, height // 6)
-            self.confession_input.text_input.setMaximumHeight(max_height)
-        
-        # Adjust button layout for very narrow windows
+        # Adjust font sizes based on window width
         if width < 600:
-            # Change button layout to vertical for narrow windows
-            self.button_layout.setDirection(QHBoxLayout.Direction.TopToBottom)
+            # Small window - reduce font sizes
+            self.setFontSize(self, 10)
+        elif width < 1000:
+            # Medium window - default font sizes
+            self.setFontSize(self, 12)
         else:
-            # Default horizontal layout
-            self.button_layout.setDirection(QHBoxLayout.Direction.LeftToRight)
+            # Large window - increase font sizes
+            self.setFontSize(self, 14)
+            
+    def setFontSize(self, widget, size):
+        """Recursively set font size for a widget and its children"""
+        font = widget.font()
+        font.setPointSize(size)
+        widget.setFont(font)
+        
+        # Apply to all child widgets
+        for child in widget.findChildren(QWidget):
+            child_font = child.font()
+            child_font.setPointSize(size)
+            child.setFont(child_font)
 
     def closeEvent(self, event):
-        """Handle window close event"""
-        # Create fade-out animation
-        fade_out = create_fade_animation(
-            self, 
-            **AnimationDefinitions.window_fade_out()
-        )
-        
-        # Start animation and close when finished
-        fade_out.finished.connect(lambda: event.accept())
-        fade_out.start()
-        
-        # Accept the event to prevent immediate closing
-        event.ignore()
+        """Handle window close event safely and avoid blocking shutdown"""
+        # Immediate accept to prevent shutdown hang on interrupt or stalled animations
+        event.accept()
+        try:
+            # Optionally trigger a non-blocking fade without gating close
+            fade_out = create_fade_animation(
+                self,
+                **AnimationDefinitions.window_fade_out()
+            )
+            fade_out.start()
+        except Exception:
+            # If animation setup fails, just proceed with close
+            pass
 
 
 if __name__ == "__main__":

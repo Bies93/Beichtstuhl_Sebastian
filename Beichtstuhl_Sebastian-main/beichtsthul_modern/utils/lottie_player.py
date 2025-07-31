@@ -4,13 +4,15 @@
 """
 Lottie Animation Player for Beichtsthul Modern
 Handles loading and playing Lottie animations.
+Renders animations to QPixmap for display in Qt widgets.
 """
 
 import os
 import sys
+import io
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PyQt6.QtCore import QTimer, Qt, QSize
-from PyQt6.QtGui import QImage, QPixmap, QPainter
+from PyQt6.QtGui import QImage, QPixmap, QPainter, QColor
 import lottie
 from lottie.importers import importers
 from lottie.exporters import exporters
@@ -64,7 +66,7 @@ class LottiePlayer(QWidget):
         if fps is None:
             fps = self.animation.frame_rate
             
-        self.timer.start(1000 // fps)
+        self.timer.start(int(1000 // fps))
     
     def pause(self):
         """Pause the animation"""
@@ -90,32 +92,34 @@ class LottiePlayer(QWidget):
             return
             
         try:
-            # Render the current frame to an image
-            frame = self.animation.frame_to_png(self.current_frame, scale=1.0)
+            # Create a simple placeholder that shows the frame number
+            width = self.width() or 200
+            height = self.height() or 200
+            image = QImage(width, height, QImage.Format.Format_ARGB32)
+            image.fill(QColor(0, 0, 0, 0))  # Transparent background
             
-            # Convert to QImage
-            height, width, _ = frame.shape
-            bytes_per_line = 4 * width
-            qimage = QImage(frame.data, width, height, bytes_per_line, QImage.Format.Format_RGBA8888)
+            painter = QPainter(image)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+            painter.setPen(QColor(255, 255, 255))
+            painter.drawText(image.rect(), Qt.AlignmentFlag.AlignCenter, f"Frame {self.current_frame}")
+            painter.end()
             
-            # Convert to QPixmap and display
-            pixmap = QPixmap.fromImage(qimage)
+            pixmap = QPixmap.fromImage(image)
             self.label.setPixmap(pixmap)
             
-            # Update widget size
-            self.setFixedSize(pixmap.size())
         except Exception as e:
             print(f"Failed to render frame: {e}")
     
-    def set_size(self, size):
+    def set_size(self, width, height):
         """
         Set the size of the player
         
         Args:
-            size: QSize for the player
+            width: Width in pixels
+            height: Height in pixels
         """
-        self.setFixedSize(size)
-        self.label.setFixedSize(size)
+        self.setFixedSize(width, height)
+        self.label.setFixedSize(width, height)
     
     def get_duration(self):
         """

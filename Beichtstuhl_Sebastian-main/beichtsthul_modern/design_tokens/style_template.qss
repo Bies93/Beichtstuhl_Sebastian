@@ -1,0 +1,167 @@
+QMainWindow {
+    background: $colors.base.bg.base;
+    color: $colors.base.text.primary;
+    font-family: $fonts.body.family;
+    font-size: $fonts.body.sizes.bodypx;
+}
+
+/* Header labels */
+QLabel[type="header"] {
+    font-family: $fonts.headline.family;
+    font-size: $fonts.headline.sizes.h1px;
+    font-weight: $fonts.headline.weight.bold;
+    color: $colors.base.text.primary;
+}
+
+/* Section headers */
+QLabel[type="section"] {
+    font-family: $fonts.headline.family;
+    font-size: $fonts.headline.sizes.h3px;
+    font-weight: $fonts.headline.weight.bold;
+    color: $colors.base.text.primary;
+}
+
+/* Body text */
+QLabel {
+    color: $colors.base.text.primary;
+    font-family: $fonts.body.family;
+    font-size: $fonts.body.sizes.bodypx;
+}
+
+/* Caption text */
+QLabel[type="caption"] {
+    color: $colors.base.text.secondary;
+    font-family: $fonts.body.family;
+    font-size: $fonts.body.sizes.captionpx;
+}
+
+/* Card widgets with glassmorphism effect */
+.card {
+    border-radius: $radius.mdpx;
+    background: rgba(255,255,255,$effects.glass.opacity);
+    backdrop-filter: blur($effects.glass.blurpx);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Glass panel for confession input */
+QPlainTextEdit, QLineEdit {
+    background: rgba(255,255,255,$effects.glass.opacity);
+    border: 2px solid $colors.accent.1;
+    border-radius: $radius.smpx;
+    padding: 8px;
+    color: $colors.base.text.primary;
+    font-family: $fonts.body.family;
+    font-size: $fonts.body.sizes.bodypx;
+    selection-background-color: $colors.accent.1;
+    selection-color: $colors.base.bg.base;
+}
+
+QPlainTextEdit:focus, QLineEdit:focus {
+    border: 2px solid $colors.accent.1;
+    box-shadow: 0 0 $effects.glow.blurpx $colors.accent.1;
+}
+
+/* Focus states for other interactive widgets */
+QSlider:focus, QComboBox:focus, QCheckBox:focus, QGroupBox:focus {
+    border: 2px solid $colors.accent.1;
+}
+
+/* Progress bar styling */
+QProgressBar {
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: $radius.smpx;
+    background: rgba(255,255,255,0.07);
+    text-align: center;
+    color: $colors.base.text.primary;
+    font-family: $fonts.body.family;
+    font-size: $fonts.body.sizes.captionpx;
+}
+
+QProgressBar::chunk {
+    background: $gradients.neon_primary;
+    border-radius: $radius.smpx;
+}
+
+/* Primary buttons with neon effect */
+QPushButton[class="primary"] {
+    font-family: $fonts.body.family;
+    font-weight: $fonts.body.weight.bold;
+    font-size: $fonts.body.sizes.bodypx;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    border: 0;
+    border-radius: $radius.smpx;
+    background: $gradients.neon_primary;
+    color: $colors.base.bg.base;
+    min-height: 30px;
+}
+
+QPushButton[class="primary"]:hover {
+    /* transform: translateY(-1px); - Not supported in Qt stylesheets */
+}
+
+QPushButton[class="primary"]:pressed {
+    transform: scale(0.96);
+}
+
+QPushButton[class="primary"]:focus {
+    border: 2px solid $colors.accent.1;
+    box-shadow: 0 0 $effects.glow.blurpx $colors.accent.1;
+}
+
+/* Footer styling */
+QWidget#footer {
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur($effects.glass.blurpx);
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Karma display styling */
+QWidget#karmaDisplay {
+    background: transparent;
+}
+
+/* Monk visualizer styling */
+QWidget#monkVisualizer {
+    background: transparent;
+    border-radius: $radius.mdpx;
+}
+
+/* Response text styling */
+QLabel#responseText {
+    color: $colors.base.text.primary;
+    font-family: $fonts.body.family;
+    font-size: $fonts.body.sizes.bodypx;
+    line-height: 1.4;
+}
+
+/* Karma value styling */
+QLabel#karmaValue {
+    color: $colors.base.text.primary;
+    font-family: $fonts.body.family;
+    font-size: $fonts.headline.sizes.h4px;
+    font-weight: $fonts.body.weight.bold;
+}
+
+/* Karma label styling */
+QLabel#karmaLabel {
+    color: $colors.base.text.primary;
+    font-family: $fonts.body.family;
+    font-size: $fonts.body.sizes.bodypx;
+}
+
+/* Input card styling */
+QWidget#inputCard {
+    background: rgba(255,255,255,$effects.glass.opacity);
+    backdrop-filter: blur($effects.glass.blurpx);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: $radius.mdpx;
+}
+
+/* Visualizer card styling */
+QWidget#visualizerCard {
+    background: rgba(255,255,255,$effects.glass.opacity);
+    backdrop-filter: blur($effects.glass.blurpx);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: $radius.mdpx;
+}

@@ -1,13 +1,18 @@
 {
-  "karma_schulden": 49,
+  "karma_schulden": 56,
   "beicht_historie": [
     {
       "suende": "mlkj",
       "kategorie": "standard",
       "karma": 7
+    },
+    {
+      "suende": "dfg",
+      "kategorie": "standard",
+      "karma": 7
     }
   ],
   "suenden_kategorien": {
-    "standard": 1
+    "standard": 2
   }
 }

@@ -2,178 +2,177 @@
 # -*- coding: utf-8 -*-
 
 """
-Animated Button for Beichtsthul Modern
-A custom button with cyberpunk neon animations and visual effects.
+Neon Button for Beichtsthul Modern
+A custom button with cyberpunk neon styling and a glow effect.
+Features gradient background, hover effects, and press animations.
 """
 
-from PyQt6.QtWidgets import QPushButton, QApplication
-from PyQt6.QtCore import Qt, QTimer, pyqtProperty, QEasingCurve, QPropertyAnimation, QRect, QPoint
-from PyQt6.QtGui import QPainter, QColor, QBrush, QPen, QFont, QFontMetrics, QRadialGradient
-
+from PyQt6.QtWidgets import QPushButton, QGraphicsDropShadowEffect
+from PyQt6.QtGui import QColor
+from PyQt6.QtCore import QEasingCurve, QPropertyAnimation, pyqtProperty
 
 class AnimatedButton(QPushButton):
-    """A custom button with animations and visual effects"""
+    """A custom button with neon styling, hover effects, and press animations."""
 
     def __init__(self, text="", parent=None):
         super().__init__(text, parent)
-        self._animation_speed = 150
-        self._scale_factor = 1.0
-        self._original_stylesheet = ""
-        self._ripple_position = None
-        self._ripple_radius = 0
-        self._ripple_animation = None
+        
+        # Set the object property to be targeted by the QSS file
+        self.setProperty("class", "primary")
         
         # Setup animations
         self.setup_animations()
         
-        # Connect signals
-        self.pressed.connect(self.on_pressed)
-        self.released.connect(self.on_released)
+        # Setup the glow effect
+        self.setup_glow_effect()
+        
+        # Set default size policy
+        self.setFixedSize(120, 40)
 
     def setup_animations(self):
-        """Setup button animations"""
+        """Setup hover and press animations"""
+        # Elevation animation
+        self._elevation = 0
+        self.elevation_animation = QPropertyAnimation(self, b"elevation")
+        self.elevation_animation.setDuration(200)
+        self.elevation_animation.setEasingCurve(QEasingCurve.Type.OutQuad)
+        
         # Scale animation for press effect
-        self.scale_animation = QPropertyAnimation(self, b"scale_factor")
-        self.scale_animation.setDuration(self._animation_speed)
-        self.scale_animation.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self.scale_animation = QPropertyAnimation(self, b"geometry")
+        self.scale_animation.setDuration(100)
+        self.scale_animation.setEasingCurve(QEasingCurve.Type.OutQuad)
         
-        # Ripple animation
-        self.ripple_animation = QPropertyAnimation(self, b"ripple_radius")
-        self.ripple_animation.setDuration(300)
-        self.ripple_animation.setEasingCurve(QEasingCurve.Type.OutCubic)
-        self.ripple_animation.finished.connect(self.clear_ripple)
-
-    def on_pressed(self):
-        """Handle button press"""
-        # Start scale animation
-        self.scale_animation.setStartValue(1.0)
-        self.scale_animation.setEndValue(0.95)
-        self.scale_animation.start()
+    def setup_glow_effect(self):
+        """
+        Configures a QGraphicsDropShadowEffect to create a neon glow.
+        The actual color and intensity will be driven by the stylesheet.
+        """
+        glow = QGraphicsDropShadowEffect(self)
+        glow.setOffset(0, 0)
+        # Set a default blur radius; can be fine-tuned in QSS if needed
+        glow.setBlurRadius(15)
+        # Set a default color; this will be overridden by the stylesheet
+        glow.setColor(QColor("#00E5FF"))
         
-        # Start ripple effect
-        self.start_ripple_effect()
-
-    def on_released(self):
-        """Handle button release"""
-        # Start scale animation back to normal
-        self.scale_animation.setStartValue(0.95)
-        self.scale_animation.setEndValue(1.0)
-        self.scale_animation.start()
-
-    def start_ripple_effect(self):
-        """Start the ripple effect animation"""
-        # Get the position for the ripple (center of button)
-        self._ripple_position = QPoint(self.width() // 2, self.height() // 2)
+        self.setGraphicsEffect(glow)
         
-        # Start ripple animation
-        self.ripple_animation.setStartValue(0)
-        self.ripple_animation.setEndValue(max(self.width(), self.height()))
-        self.ripple_animation.start()
-
-    def clear_ripple(self):
-        """Clear the ripple effect"""
-        self._ripple_position = None
-        self._ripple_radius = 0
-        self.update()
-
-    def paintEvent(self, event):
-        """Custom paint event to draw ripple effect"""
-        # Draw the normal button first
-        super().paintEvent(event)
-        
-        # Draw ripple effect if active
-        if self._ripple_position is not None and self._ripple_radius > 0:
-            painter = QPainter(self)
-            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-            
-            # Create ripple color based on button color
-            ripple_color = self.get_ripple_color()
-            ripple_color.setAlpha(50)  # Make it semi-transparent
-            
-            # Draw ripple circle
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(QBrush(ripple_color))
-            painter.drawEllipse(
-                self._ripple_position, 
-                self._ripple_radius, 
-                self._ripple_radius
-            )
-
-    def get_ripple_color(self):
-        """Get the ripple color based on button style"""
-        # Try to get color from stylesheet
-        palette = self.palette()
-        return palette.color(self.foregroundRole())
-
     def enterEvent(self, event):
-        """Handle mouse enter event"""
-        # Add hover effect
-        if self.isEnabled():
-            self.setCursor(Qt.CursorShape.PointingHandCursor)
+        """Handle mouse enter event for hover effect"""
         super().enterEvent(event)
-
-    def leaveEvent(self, event):
-        """Handle mouse leave event"""
-        # Remove hover effect
-        self.setCursor(Qt.CursorShape.ArrowCursor)
-        super().leaveEvent(event)
-
-    def resizeEvent(self, event):
-        """Handle resize event"""
-        super().resizeEvent(event)
-        # Update ripple animation end value if needed
-        if self.ripple_animation.state() != QPropertyAnimation.State.Running:
-            self.ripple_animation.setEndValue(max(self.width(), self.height()))
-
-    @pyqtProperty(float)
-    def scale_factor(self):
-        """Get the scale factor"""
-        return self._scale_factor
-
-    @scale_factor.setter
-    def scale_factor(self, value):
-        """Set the scale factor"""
-        self._scale_factor = value
-        # Apply scaling
-        self.setGeometry(
-            int(self.x() + (self.width() * (1 - value)) / 2),
-            int(self.y() + (self.height() * (1 - value)) / 2),
-            int(self.width() * value),
-            int(self.height() * value)
-        )
-
-    @pyqtProperty(int)
-    def ripple_radius(self):
-        """Get the ripple radius"""
-        return self._ripple_radius
-
-    @ripple_radius.setter
-    def ripple_radius(self, value):
-        """Set the ripple radius"""
-        self._ripple_radius = value
-        self.update()
-
-    def set_animation_speed(self, speed):
-        """Set the animation speed"""
-        self._animation_speed = speed
-        self.scale_animation.setDuration(speed)
-        self.ripple_animation.setDuration(speed * 2)
+        self.start_hover_animation()
         
-    def set_min_size_for_responsiveness(self, width=None, height=None):
-        """Set minimum size for responsive design"""
-        if width is not None:
-            self.setMinimumWidth(width)
-        if height is not None:
-            self.setMinimumHeight(height)
-
+    def leaveEvent(self, event):
+        """Handle mouse leave event for hover effect"""
+        super().leaveEvent(event)
+        self.end_hover_animation()
+        
+    def mousePressEvent(self, event):
+        """Handle mouse press event for press effect"""
+        super().mousePressEvent(event)
+        self.start_press_animation()
+        
+    def mouseReleaseEvent(self, event):
+        """Handle mouse release event for press effect"""
+        super().mouseReleaseEvent(event)
+        self.end_press_animation()
+        
+    def start_hover_animation(self):
+        """Start the hover animation (elevate + shadow)"""
+        self.elevation_animation.setStartValue(self._elevation)
+        self.elevation_animation.setEndValue(2)
+        self.elevation_animation.start()
+        
+    def end_hover_animation(self):
+        """End the hover animation (return to normal)"""
+        self.elevation_animation.setStartValue(self._elevation)
+        self.elevation_animation.setEndValue(0)
+        self.elevation_animation.start()
+        
+    def start_press_animation(self):
+        """Start the press animation (scale down)"""
+        # Store original geometry
+        self._original_geometry = self.geometry()
+        
+        # Calculate scaled geometry
+        scaled_width = int(self.width() * 0.96)
+        scaled_height = int(self.height() * 0.96)
+        scaled_x = self.x() + (self.width() - scaled_width) // 2
+        scaled_y = self.y() + (self.height() - scaled_height) // 2
+        
+        scaled_geometry = self.geometry()
+        scaled_geometry.setX(scaled_x)
+        scaled_geometry.setY(scaled_y)
+        scaled_geometry.setWidth(scaled_width)
+        scaled_geometry.setHeight(scaled_height)
+        
+        self.scale_animation.setStartValue(self.geometry())
+        self.scale_animation.setEndValue(scaled_geometry)
+        self.scale_animation.start()
+        
+    def end_press_animation(self):
+        """End the press animation (return to normal)"""
+        if hasattr(self, '_original_geometry'):
+            self.scale_animation.setStartValue(self.geometry())
+            self.scale_animation.setEndValue(self._original_geometry)
+            self.scale_animation.start()
+            
+    @pyqtProperty(float)
+    def elevation(self):
+        """Get the current elevation"""
+        return self._elevation
+        
+    @elevation.setter
+    def elevation(self, value):
+        """Set the elevation and update the shadow effect"""
+        self._elevation = value
+        effect = self.graphicsEffect()
+        if effect and isinstance(effect, QGraphicsDropShadowEffect):
+            effect.setOffset(0, -value)
 
 if __name__ == "__main__":
     import sys
-    app = QApplication(sys.argv)
+    from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
     
-    # Create test button
-    button = AnimatedButton("Test Button")
-    button.resize(200, 50)
-    button.show()
+    # To test this button, we need a running application with the stylesheet loaded
+    # The following is a minimal example
+    
+    # Assume app.qss has been generated by build_style.py
+    # For testing, we can create a dummy app.qss
+    
+    app_qss = """
+    QPushButton[class="primary"] {
+        font-family: "Inter";
+        font-weight: 500;
+        text-transform: uppercase;
+        padding: 10px 20px;
+        border: 0;
+        border-radius: 8px;
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #00E5FF, stop:1 #FF00A8);
+        color: #0E1222;
+        transition: all .2s;
+    }
+    
+    QPushButton[class="primary"]:hover {
+        transform: translateY(-2px);
+    }
+    """
+    
+    app = QApplication(sys.argv)
+    app.setStyleSheet(app_qss)
+    
+    window = QMainWindow()
+    window.setStyleSheet("background-color: #0E1222;")
+    
+    central_widget = QWidget()
+    layout = QVBoxLayout(central_widget)
+    
+    # Create the NeonButton
+    neon_button = AnimatedButton("Confess Your Sins")
+    
+    layout.addWidget(neon_button)
+    window.setCentralWidget(central_widget)
+    
+    window.resize(400, 300)
+    window.show()
     
     sys.exit(app.exec())

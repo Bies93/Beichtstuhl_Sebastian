@@ -43,6 +43,8 @@ class ResponseDisplay(QWidget):
         
         # Configure emotional indicator label
         self.emotional_indicator_label.setObjectName("caption")
+        # Bind to caption typography via QSS selector QLabel[type="caption"]
+        self.emotional_indicator_label.setProperty("type", "caption")
         self.emotional_indicator_label.setFixedWidth(30)
         
         # Create header layout for emotional indicator
@@ -94,7 +96,7 @@ class ResponseDisplay(QWidget):
         
         # Start text reveal animation
         if text:
-            self.text_reveal_timer.start(30)  # Reveal one character every 30ms
+            self.text_reveal_timer.start(25)  # Reveal one character every 25ms
         else:
             self.response_label.setText("Sprich, und ich werde urteilen...")
 

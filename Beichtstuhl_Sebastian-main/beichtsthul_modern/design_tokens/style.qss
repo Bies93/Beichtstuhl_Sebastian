@@ -2,52 +2,36 @@
 /* Auto-generated from design_tokens.json */
 
 /* Color Tokens */
-@bg-base: #0d0f1a;
+@bg-base: #0E1222;
 @bg-panel: #141826;
-@text-primary: #e0e0ff;
-@text-secondary: #a0a0c0;
-@accent-primary: #00eaff;
-@accent-secondary: #ff0078;
-@accent-warn: #ffb300;
-@accent-error: #ff3860;
-@accent-success: #00ff7f;
-@semantic-disabled: #8a91b8;
+@text-primary: #EDEFFF;
+@text-secondary: #B8BCE6;
+@accent-1: #00E5FF;
+@accent-2: #FF00A8;
+@accent-warn: #FFC400;
+@accent-success: #00FF88;
+@accent-error: #FF3860;
 @semantic-monk-robe: #8B4513;
 @semantic-monk-robe_accent: #5D2906;
 @semantic-monk-hood: #191970;
 @semantic-monk-skin: #D2B48C;
 @semantic-monk-accessories: #FFD700;
+@semantic-disabled: #8a91b8;
 
 /* Radius Tokens */
-@radius-card: 8px;
-@radius-button: 4px;
-@radius-small: 4px;
-@radius-medium: 8px;
-@radius-large: 12px;
+@radius-sm: 8px;
+@radius-md: 12px;
 
 /* Spacing Tokens */
-@spacing-base: 8px;
-@spacing-component: 16px;
-@spacing-element: 12px;
-@spacing-section: 24px;
-@spacing-xs: 4px;
-@spacing-sm: 8px;
-@spacing-md: 16px;
-@spacing-lg: 24px;
-@spacing-xl: 32px;
+@spacing-1: 4px;
+@spacing-2: 8px;
+@spacing-3: 16px;
 
 /* Duration Tokens */
 @duration-fast: 100ms;
 @duration-normal: 200ms;
 @duration-slow: 300ms;
 @duration-transition: 250ms;
-@duration-window_fade: 300ms;
-@duration-window_exit: 200ms;
-@duration-button_hover: 150ms;
-@duration-button_press: 100ms;
-@duration-text_focus: 200ms;
-@duration-monk_emotion: 300ms;
-@duration-karma_change: 500ms;
 
 /* Font Tokens */
 @font-headline-family: "Orbitron";
@@ -72,19 +56,19 @@
 @glow-spread: 0px;
 @glass-opacity: 0.07;
 @glass-blur: 6px;
-@scanlines-opacity: 0.1;
+@scanlines-opacity: 0.06;
 @scanlines-fps: 30;
 
 /* Neon Button Gradients */
-@neon-gradient-primary: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 1, stop: 0 @accent-primary, stop: 1 @accent-secondary);
-@neon-gradient-secondary: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 1, stop: 0 @accent-secondary, stop: 1 @accent-primary);
+@neon-gradient-primary: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 1, stop: 0 @accent-1, stop: 1 @accent-2);
+@neon-gradient-secondary: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 1, stop: 0 @accent-2, stop: 1 @accent-1);
 @neon-gradient-warning: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 1, stop: 0 @accent-warn, stop: 1 @accent-error);
 
 /* Glassmorphism Effects */
-@glass-panel-bg: rgba(20, 24, 38, @glass-opacity);
+@glass-panel-bg: rgba(255, 255, 255, @glass-opacity);
 
 /* Glow Effects */
-@glow-primary: 0 0 @glow-blur @accent-primary;
-@glow-secondary: 0 0 @glow-blur @accent-secondary;
+@glow-primary: 0 0 @glow-blur @accent-1;
+@glow-secondary: 0 0 @glow-blur @accent-2;
 @glow-warning: 0 0 @glow-blur @accent-warn;
 @glow-error: 0 0 @glow-blur @accent-error;

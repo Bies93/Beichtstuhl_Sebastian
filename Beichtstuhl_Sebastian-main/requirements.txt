@@ -19,5 +19,6 @@ pylint>=2.15.0
 pyinstaller>=5.0.0
 
 # For development
+pyqt6-tools>=6.4.0
 black>=22.0.0
 isort>=5.10.0

@@ -12,9 +12,12 @@ from PyQt6.QtWidgets import QApplication
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont, QFontDatabase
 
+# Import the generated resource file
+from assets import fonts_rc
 from ui.main_window import MainWindow
 from utils.resource_loader import resource_loader
-from design_tokens.generate_tokens import main as generate_tokens
+# We will now use the new build script, so generate_tokens is no longer needed here.
+# We will run the build script as a separate process or import it.
 from core.constants import FONT_HEADLINE, FONT_BODY, FONT_MONOSPACE
 
 # Add the project root to sys.path for imports
@@ -31,13 +34,32 @@ def setup_high_dpi_support(app):
 
 
 def setup_fonts(app):
-    """Setup application fonts"""
-    # Preload cyberpunk fonts (ignore if fonts are missing for now)
+    """Setup application fonts without requiring Qt resources (pyrcc6)"""
+    loaded_families = []
     try:
-        resource_loader.load_cyberpunk_fonts()
-    except Exception as e:
-        print(f"Warning: Failed to load fonts: {e}")
-    
+        from utils.resource_loader import resource_loader
+        fs_paths = [
+            resource_loader.get_font_path("Orbitron-Regular.ttf"),
+            resource_loader.get_font_path("Inter-Regular.ttf"),
+            resource_loader.get_font_path("JetBrainsMono-Regular.ttf"),
+        ]
+        for path in fs_paths:
+            if os.path.exists(path):
+                font_id = QFontDatabase.addApplicationFont(path)
+                if font_id != -1:
+                    fams = QFontDatabase.applicationFontFamilies(font_id)
+                    if fams:
+                        loaded_families.append(fams[0])
+    except Exception:
+        # If anything goes wrong, we will still set a safe system default below
+        pass
+
+    # Choose stable system defaults if custom fonts not loaded
+    default_family = loaded_families[1] if len(loaded_families) > 1 else ("Segoe UI" if sys.platform.startswith("win") else "Arial")
+    default_font = QFont(default_family)
+    default_font.setPointSize(10)
+    app.setFont(default_font)
+
     # Set default application font
     default_font = QFont(FONT_BODY if FONT_BODY else "Arial")
     default_font.setPointSize(9)  # Base size that will scale with DPI
@@ -46,21 +68,25 @@ def setup_fonts(app):
 
 def setup_styles(app):
     """Setup application styles"""
-    # Generate tokens at startup
+    # Run the build script to generate the final QSS file
     try:
-        generate_tokens()
+        # Import and run the build script
+        from design_tokens import build_style
+        print("Stylesheet generated successfully.")
+    except ImportError as e:
+        print(f"Error: Could not import build_style script: {e}")
     except Exception as e:
-        print(f"Warning: Failed to generate design tokens: {e}")
-    
+        print(f"Warning: Failed to generate stylesheet with build_style.py: {e}")
+
     # Apply application-wide stylesheet
     try:
-        # Load the generated QSS file
-        qss_path = os.path.join(os.path.dirname(__file__), "design_tokens", "style.qss")
+        # Load the generated app.qss file
+        qss_path = os.path.join(os.path.dirname(__file__), "design_tokens", "app.qss")
         if os.path.exists(qss_path):
             with open(qss_path, "r", encoding="utf-8") as f:
                 app.setStyleSheet(f.read())
         else:
-            print("Warning: style.qss not found")
+            print("Warning: app.qss not found. Please run the build_style.py script.")
     except Exception as e:
         print(f"Warning: Failed to load stylesheet: {e}")
 

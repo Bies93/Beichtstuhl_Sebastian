@@ -89,7 +89,8 @@ from enum import Enum
     code += "class SpacingTokens(Enum):\n"
     code += "    \"\"\"Spacing design tokens\"\"\"\n"
     for key, value in tokens["spacing"].items():
-        enum_name = key.upper()
+        # Convert numeric keys to valid Python identifiers
+        enum_name = f"SPACING_{key}" if key.isdigit() else key.upper()
         code += f"    {enum_name} = {value}\n"
     
     code += "\n"
@@ -343,18 +344,18 @@ def generate_qss_variables(tokens: Dict[str, Any]) -> str:
     
     # Generate gradient variables for neon buttons
     qss += "\n/* Neon Button Gradients */\n"
-    qss += "@neon-gradient-primary: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 1, stop: 0 @accent-primary, stop: 1 @accent-secondary);\n"
-    qss += "@neon-gradient-secondary: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 1, stop: 0 @accent-secondary, stop: 1 @accent-primary);\n"
+    qss += "@neon-gradient-primary: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 1, stop: 0 @accent-1, stop: 1 @accent-2);\n"
+    qss += "@neon-gradient-secondary: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 1, stop: 0 @accent-2, stop: 1 @accent-1);\n"
     qss += "@neon-gradient-warning: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 1, stop: 0 @accent-warn, stop: 1 @accent-error);\n"
     
     # Generate glassmorphism effect variables
     qss += "\n/* Glassmorphism Effects */\n"
-    qss += "@glass-panel-bg: rgba(20, 24, 38, @glass-opacity);\n"
+    qss += "@glass-panel-bg: rgba(255, 255, 255, @glass-opacity);\n"
     
     # Generate glow effect variables
     qss += "\n/* Glow Effects */\n"
-    qss += "@glow-primary: 0 0 @glow-blur @accent-primary;\n"
-    qss += "@glow-secondary: 0 0 @glow-blur @accent-secondary;\n"
+    qss += "@glow-primary: 0 0 @glow-blur @accent-1;\n"
+    qss += "@glow-secondary: 0 0 @glow-blur @accent-2;\n"
     qss += "@glow-warning: 0 0 @glow-blur @accent-warn;\n"
     qss += "@glow-error: 0 0 @glow-blur @accent-error;\n"
     

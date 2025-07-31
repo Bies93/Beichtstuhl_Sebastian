@@ -4,14 +4,58 @@
 """
 Karma Display for Beichtsthul Modern
 A custom display area for karma status with cyberpunk styling and animations.
+Features an animated gradient progress bar with inline value text.
 """
 
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QProgressBar, QSizePolicy
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QProgressBar, QSizePolicy, QStyle, QStyleOptionProgressBar
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, pyqtProperty, QRect
 from PyQt6.QtGui import QFont, QColor, QPainter, QLinearGradient, QPen, QBrush
 import random
 
 from core.constants import COLOR_ERROR, COLOR_WARNING, COLOR_SUCCESS, COLOR_PRIMARY_TEXT, COLOR_SECONDARY_BG
+
+
+class KarmaProgressBar(QProgressBar):
+    """Custom progress bar with gradient effects and inline value text"""
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setObjectName("karmaProgressBar")
+        self._karma_level = 0
+        self.setTextVisible(False)  # We'll draw our own text
+        
+    def set_karma_level(self, karma_points):
+        """Set the karma level to update gradient colors"""
+        self._karma_level = karma_points
+        self.update()
+        
+    def paintEvent(self, event):
+        """Custom paint event to draw gradient and inline text"""
+        # Draw the base progress bar
+        super().paintEvent(event)
+        
+        # Draw inline value text
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        
+        # Get the current value
+        value = self.value()
+        max_value = self.maximum()
+        
+        # Set font and color
+        font = self.font()
+        font.setBold(True)
+        painter.setFont(font)
+        
+        # Use primary text color
+        painter.setPen(QColor(COLOR_PRIMARY_TEXT))
+        
+        # Draw text in the center
+        text = f"{value}/{max_value}"
+        text_rect = self.rect()
+        painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, text)
+        
+        painter.end()
 from design_tokens.design_tokens import ColorTokens, FontTokens
 
 
@@ -37,6 +81,8 @@ class KarmaDisplay(QWidget):
         # Create header label
         self.header_label = QLabel("Karma Status")
         self.header_label.setObjectName("header")
+        # Section header styling (Orbitron 18px) via QSS selector QLabel[type="section"]
+        self.header_label.setProperty("type", "section")
         layout.addWidget(self.header_label)
         
         # Create karma points layout
@@ -55,11 +101,10 @@ class KarmaDisplay(QWidget):
         
         layout.addLayout(karma_layout)
         
-        # Create progress bar
-        self.progress_bar = QProgressBar()
+        # Create custom progress bar
+        self.progress_bar = KarmaProgressBar()
         self.progress_bar.setRange(0, self._karma_threshold)
         self.progress_bar.setValue(0)
-        self.progress_bar.setTextVisible(False)
         layout.addWidget(self.progress_bar)
         
         # Create status label
@@ -144,18 +189,7 @@ class KarmaDisplay(QWidget):
         self.karma_value_label.setText(str(value))
         
         # Update progress bar color based on karma level
-        if value <= 0:
-            self.progress_bar.setStyleSheet(
-                f"QProgressBar::chunk {{ background-color: {COLOR_SUCCESS}; }}"
-            )
-        elif value < 300:
-            self.progress_bar.setStyleSheet(
-                f"QProgressBar::chunk {{ background-color: {COLOR_WARNING}; }}"
-            )
-        else:
-            self.progress_bar.setStyleSheet(
-                f"QProgressBar::chunk {{ background-color: {COLOR_ERROR}; }}"
-            )
+        self.progress_bar.set_karma_level(value)
 
     def get_karma(self):
         """Get the current karma points"""
